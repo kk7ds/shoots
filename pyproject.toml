@@ -1,0 +1,22 @@
+[project]
+name = "shoots"
+version = "0.1"
+description = "A simple CLI for Bambu X1C"
+readme = "README.md"
+license = {file = "LICENSE.txt"}
+authors = [{name = "Dan Smith", email = "shoots@f.danplanet.com"}]
+requires-python = ">3.8"
+dependencies = ["paho-mqtt"]
+
+[project.urls]
+"Homepage" = "https://github.com/kk7ds/shoots"
+
+[project.scripts]
+shoots = "shoots:main"
+
+[project.entry-points.shoots]
+monitor = "shoots.commands.monitor:Monitor"
+
+[build-system]
+requires = ["setuptools>=43.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
