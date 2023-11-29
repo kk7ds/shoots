@@ -18,6 +18,10 @@ STAGES = {
 LOG = logging.getLogger(__name__)
 
 
+class NotReady(Exception):
+    pass
+
+
 class Printer:
     def __init__(self, host, key, device, reconnect=False):
         self._host = host
@@ -26,6 +30,7 @@ class Printer:
         self._reconnect = reconnect
         self._state = {}
         self._condition = threading.Condition()
+        self._sequence = 0
         if self._device:
             self.log = LOG.getChild(self._device)
         else:
@@ -90,28 +95,31 @@ class Printer:
 
         client.subscribe("#")
 
-        self.pushall()
+        try:
+            self.pushall()
+        except NotReady:
+            pass
+
+    def send(self, top, command, data):
+        # We can only push stuff to the device if we know its ID
+        if not self._device:
+            raise NotReady()
+
+        self._sequence += 1
+        msg = {top: {'command': command, 'sequence_id': self._sequence}}
+        msg[top].update(data)
+        self.client.publish('device/%s/request' % self._device,
+                            json.dumps(msg).encode() + b'\x00')
 
     def pushall(self):
-        if self._device:
-            # We can only push stuff to the device if we know its ID
-            msg_data = {'pushing': {'command': 'pushall',
-                                    'push_target': 1,
-                                    'sequence_id': 0,
-                                    'version': 1}}
-            self.client.publish('device/%s/request' % self._device,
-                                json.dumps(msg_data).encode() + b'\x00')
+        self.send('pushing', 'pushall', {'push_target': 1,
+                                         'version': 1})
+
+    def info(self):
+        self.send('info', 'get_version', {})
 
     def _process_msg(self, client, userdata, msg):
         _device, printer, topic = msg.topic.split('/')
-
-        if self._device is None and topic == 'report':
-            self._device = printer
-            self.log = LOG.getChild(self._device)
-            if not self._state:
-                self.pushall()
-            self.log.info('Determined printer device ID to be %s',
-                          self._device)
 
         if topic not in ('report', 'request'):
             self.log.info('Saw topic: %s' % msg.topic)
@@ -122,12 +130,33 @@ class Printer:
         try:
             data = json.loads(data)
             if data:
-                self.log.debug(pprint.pformat(data))
+                self.log.debug('%s: %s' % (topic, pprint.pformat(data)))
         except json.JSONDecodeError:
             self.log.warning('Non-JSON payload to %s: %r' % (msg.topic,
                                                              msg.payload))
             return
 
+        if self._device is None and topic == 'report':
+            self._device = printer
+            self.log = LOG.getChild(self._device)
+            if not self._state:
+                self.pushall()
+            self.log.info('Determined printer device ID to be %s',
+                          self._device)
+
+        if topic == 'report' and 'print' in data:
+            return self._process_report_print(data)
+        elif topic == 'report' and 'info' in data:
+            self._process_report_info(data)
+
+    def _process_report_info(self, data):
+        data = data['info']
+        if data['command'] == 'get_version':
+            self._state['version'] = data['module']
+        else:
+            print('unknown %s')
+
+    def _process_report_print(self, data):
         print_data = data.get('print', {})
         if not print_data:
             return
@@ -162,8 +191,7 @@ class Printer:
         with self._condition:
             self._state['_last_changed'] = self._process_msg(
                 client, userdata, msg)
-            if self._state['_last_changed']:
-                self._condition.notify()
+            self._condition.notify()
 
     def on_disconnect(self, client, userdata, rc):
         reasons = {
