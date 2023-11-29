@@ -43,6 +43,10 @@ class Printer:
         self.client.loop_start()
 
     @property
+    def device(self):
+        return self._device
+
+    @property
     def state(self):
         return self._state
 

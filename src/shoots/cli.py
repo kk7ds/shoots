@@ -81,6 +81,11 @@ def main():
         print('Failed to connect to %s: %s' % (args.host, e))
         return 1
 
+    while not p.device:
+        LOG.info('Waiting for device identification')
+        p.wait()
+
+    LOG.debug('Running command %s' % args.command)
     try:
         command = commands[args.command]
         return command.execute(args, p)
