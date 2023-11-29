@@ -40,6 +40,8 @@ def main():
                                      'ommitted)'))
     p.add_argument('--listen', default='0.0.0.0',
                    help='Listen address for discovery')
+    p.add_argument('--reconnect', action='store_true', default=False,
+                   help='Attempt to (re)connect forever')
     p.add_argument('-v', '--verbose', action='store_true', default=False,
                    help='Log verbosely')
     p.add_argument('--debug', action='store_true', default=False,
@@ -72,7 +74,12 @@ def main():
                 args.device,
                 args.host))
 
-    p = printer.Printer(args.host, args.key, args.device)
+    try:
+        p = printer.Printer(args.host, args.key, args.device,
+                            reconnect=args.reconnect)
+    except OSError as e:
+        print('Failed to connect to %s: %s' % (args.host, e))
+        return 1
 
     try:
         command = commands[args.command]

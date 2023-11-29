@@ -18,10 +18,11 @@ LOG = logging.getLogger(__name__)
 
 
 class Printer:
-    def __init__(self, host, key, device):
+    def __init__(self, host, key, device, reconnect=False):
         self._host = host
         self._key = key
         self._device = device
+        self._reconnect = reconnect
         self._state = {}
         self._condition = threading.Condition()
         if self._device:
@@ -35,7 +36,10 @@ class Printer:
         self.client.on_disconnect = self.on_disconnect
         self.client.username_pw_set('bblp', self._key)
         self.client.tls_set(cert_reqs=ssl.CERT_NONE)
-        self.client.connect(host, 8883, 60)
+        if reconnect:
+            self.client.connect_async(host, 8883, 60)
+        else:
+            self.client.connect(host, 8883, 60)
         self.client.loop_start()
 
     @property
@@ -161,6 +165,11 @@ class Printer:
         }
         self.log.warning('Disconnected: %s',
                          reasons.get(rc, 'Unknown code %i' % rc))
-        self._state['_connected'] = False
+        if self._reconnect:
+            self.log.info('Reconnecting')
+            self.client.reconnect()
+        else:
+            self._state['_connected'] = False
+
         with self._condition:
             self._condition.notify()
