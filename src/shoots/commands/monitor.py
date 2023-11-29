@@ -33,7 +33,7 @@ class Monitor(cli.ShootsCommand):
         while p.state.get('_connected') is not False:
             p.wait()
             state = p.state
-            changed = state.get('_last_changed', set())
+            changed = state.get('_last_changed') or set()
             if args.all_state:
                 self.all(state)
             else:
