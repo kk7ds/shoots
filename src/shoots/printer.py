@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import pprint
+import socket
 import ssl
 import threading
 
@@ -31,6 +32,7 @@ class Printer:
             self.log = LOG
 
         self.client = mqtt.Client()
+        self.client.enable_logger()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
         self.client.on_disconnect = self.on_disconnect
@@ -169,9 +171,14 @@ class Printer:
         }
         self.log.warning('Disconnected: %s',
                          reasons.get(rc, 'Unknown code %i' % rc))
-        if self._reconnect:
+        while self._reconnect:
             self.log.info('Reconnecting')
-            self.client.reconnect()
+            try:
+                self.client.reconnect()
+            except (OSError, TimeoutError):
+                continue
+            else:
+                break
         else:
             self._state['_connected'] = False
 
