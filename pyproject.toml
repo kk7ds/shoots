@@ -16,6 +16,7 @@ shoots = "shoots:main"
 
 [project.entry-points.shoots]
 monitor = "shoots.commands.monitor:Monitor"
+info = "shoots.commands.info:Info"
 
 [build-system]
 requires = ["setuptools>=43.0.0", "wheel"]

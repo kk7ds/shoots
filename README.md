@@ -17,11 +17,12 @@ $ pip install https://github.com/kk7ds/shoots
 ## Usage
 ```
 $ shoots -h
-usage: shoots [-h] [--host HOST] [--device DEVICE] [--listen LISTEN] [-v] [--debug] key {monitor,other} ...
+usage: shoots [-h] [--host HOST] [--device DEVICE] [--listen LISTEN] [-v] [--debug] key {info,monitor} ...
 
 positional arguments:
   key              Network key
-  {monitor}        Command to run
+  {info,monitor}   Command to run
+    info           Show info about printer
     monitor        Watch printer status
 
 options:
