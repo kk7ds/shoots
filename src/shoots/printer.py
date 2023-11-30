@@ -10,9 +10,12 @@ import paho.mqtt.client as mqtt
 
 PRINT_STAGE_IDLE = 1
 PRINT_STAGE_PRINTING = 2
+# Also means filament ran out
+PRINT_STAGE_PAUSED = 3
 STAGES = {
     PRINT_STAGE_IDLE: 'Idle',
     PRINT_STAGE_PRINTING: 'Printing',
+    PRINT_STAGE_PAUSED: 'Paused',
 }
 
 LOG = logging.getLogger(__name__)
