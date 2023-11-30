@@ -161,6 +161,8 @@ class Printer:
         if not print_data:
             return
 
+        self._state['print'] = print_data
+
         if print_data.get('command') != 'push_status':
             self.log.debug('Unhandled command %r' % print_data.get('command'))
             return

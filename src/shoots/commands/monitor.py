@@ -45,3 +45,22 @@ class Monitor(cli.ShootsCommand):
             elif args.one:
                 return 0
         return 255
+
+
+class Debug(cli.ShootsCommand):
+    def add_args(self, subparsers: argparse._SubParsersAction):
+        subparsers.add_parser('debug', help='Watch for every stat')
+
+    def execute(self, args, p):
+        ignore = ('sequence_id',)
+        ps = p.state.get('print', {})
+        while True:
+            p.wait()
+            for k in ps.keys() | p.state.get('print', {}).keys():
+                if k in ignore:
+                    continue
+                old = ps.get(k)
+                new = p.state.get('print', {}).get(k)
+                if new and old != new and not isinstance(new, (dict, list)):
+                    print('%s: %r -> %r' % (k, old, new))
+                    ps[k] = new

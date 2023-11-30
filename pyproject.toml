@@ -16,6 +16,7 @@ shoots = "shoots:main"
 
 [project.entry-points.shoots]
 monitor = "shoots.commands.monitor:Monitor"
+debug = "shoots.commands.monitor:Debug"
 info = "shoots.commands.info:Info"
 
 [build-system]
