@@ -18,6 +18,8 @@ shoots = "shoots:main"
 monitor = "shoots.commands.monitor:Monitor"
 debug = "shoots.commands.monitor:Debug"
 info = "shoots.commands.info:Info"
+files = "shoots.commands.files:Files"
+print = "shoots.commands.print:Print"
 
 [build-system]
 requires = ["setuptools>=43.0.0", "wheel"]

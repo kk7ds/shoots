@@ -53,6 +53,14 @@ class Printer:
         self.client.loop_start()
 
     @property
+    def key(self):
+        return self._key
+
+    @property
+    def host(self):
+        return self._host
+
+    @property
     def device(self):
         return self._device
 
@@ -120,6 +128,27 @@ class Printer:
 
     def info(self):
         self.send('info', 'get_version', {})
+
+    def print(self, **args):
+        file = args.pop('file')
+        default_args = {
+            'param': 'Metadata/plate_1.gcode',
+            'subtask_name': file,
+            'url': 'ftp://%s' % file,
+            'bed_type': 'auto',
+            'timelapse': False,
+            'bed_leveling': True,
+            'flow_cali': False,
+            'vibration_cali': True,
+            'layer_inspect': False,
+            'use_ams': False,
+            'profile_id': '0',
+            'project_id': '0',
+            'subtask_id': '0',
+            'task_id': '0',
+        }
+        default_args.update(args)
+        self.send('print', 'project_file', default_args)
 
     def _process_msg(self, client, userdata, msg):
         _device, printer, topic = msg.topic.split('/')
