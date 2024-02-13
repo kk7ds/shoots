@@ -7,11 +7,14 @@ This tool is extensible, meaning it is easy to add new functionality in a
 modular way. It is pluggable so you can add your own local commands or
 hooks with python entry points.
 
+Works on linux, macOS, and Windows without external dependencies (other than
+Python).
+
 This is not associated with Bambu Labs in any way.
 
 ## Install
 ```
-$ pip install https://github.com/kk7ds/shoots
+$ pip install git+https://github.com/kk7ds/shoots
 ```
 
 ## Usage
