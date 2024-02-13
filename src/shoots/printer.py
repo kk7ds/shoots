@@ -39,7 +39,7 @@ class Printer:
         else:
             self.log = LOG
 
-        self.client = mqtt.Client()
+        self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
         self.client.enable_logger()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
