@@ -188,6 +188,15 @@ class Printer:
         default_args.update(args)
         self.send('print', 'project_file', default_args)
 
+    def stop(self):
+        self.send('print', 'stop', {'param': ''})
+
+    def pause(self):
+        self.send('print', 'pause', {'param': ''})
+
+    def resume(self):
+        self.send('print', 'resume', {'param': ''})
+
     def _process_msg(self, client, userdata, msg):
         _device, printer, topic = msg.topic.split('/')
 
