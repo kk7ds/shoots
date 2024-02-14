@@ -62,6 +62,9 @@ def main():
             printer_data = discover.discover(args)
         except discover.UnableToDiscover as e:
             print(e)
+            if 'in use' in str(e).lower():
+                print('If bambu studio or orcaslicer is running, either close '
+                      'it or use --host to go direct.')
             return 1
         args.host = printer_data['Location']
         args.device = printer_data['USN']
