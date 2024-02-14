@@ -140,7 +140,7 @@ class Printer:
             'bed_leveling': True,
             'flow_cali': False,
             'vibration_cali': True,
-            'layer_inspect': False,
+            'layer_inspect': True,
             'use_ams': True,
             'profile_id': '0',
             'project_id': '0',
