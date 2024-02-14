@@ -8,8 +8,7 @@ from shoots import printer
 class Print(cli.ShootsCommand):
     def add_args(self, subparsers: argparse._SubParsersAction):
         p = subparsers.add_parser('print', help='Control printing')
-        p.add_argument('subcommand', choices=['fromsd'])
-        p.add_argument('--file', help='File to act on')
+        p.add_argument('file', help='File to print')
         p.add_argument('--no-ams', action='store_true', default=False,
                        help='Do not use AMS')
         p.add_argument('--no-level', action='store_true', default=False,
@@ -20,10 +19,9 @@ class Print(cli.ShootsCommand):
                        help='Record timelapse')
 
     def execute(self, args:argparse.Namespace, p: printer.Printer):
-        if args.subcommand == 'fromsd':
-            p.print(file=args.file,
-                    use_ams=not args.no_ams,
-                    bed_leveling=not args.no_level,
-                    flow_cali=not args.no_flowcal,
-                    timelapse=args.timelapse)
+        p.print(file=args.file,
+                use_ams=not args.no_ams,
+                bed_leveling=not args.no_level,
+                flow_cali=not args.no_flowcal,
+                timelapse=args.timelapse)
         p.wait()
