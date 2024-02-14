@@ -58,7 +58,7 @@ class Print(cli.ShootsCommand):
             ftp = p.connect_ftp()
             LOG.info('Uploading %s to %s', args.file, remote_file)
             with open(args.file, 'rb') as f:
-                ftp.storbinary('STOR %s' % remote_file, f.read)
+                ftp.storbinary('STOR %s' % remote_file, f)
             LOG.info('Uploaded')
         else:
             remote_file = args.file
