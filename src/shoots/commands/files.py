@@ -12,8 +12,9 @@ LOG = logging.getLogger(__name__)
 class Files(cli.ShootsCommand):
     def add_args(self, subparsers: argparse._SubParsersAction):
         p = subparsers.add_parser('files', help='Manage files on printer')
-        p.add_argument('subcommand', choices=['list', 'remove', 'get'])
-        p.add_argument('--file', help='File or directory to act on')
+        p.add_argument('subcommand', choices=['list', 'remove', 'get', 'put'])
+        p.add_argument('file', nargs='?',
+                       help='File or directory to act on')
 
     def list(self, args: argparse.Namespace, p: printer.Printer):
         if args.file:
@@ -38,28 +39,47 @@ class Files(cli.ShootsCommand):
                 continue
             print('%4i%-3s: %s' % (sz, units, fn))
 
-    def remove(self, args: argparse.Namespace, p: printer.Printer):
-        if not args.file:
+    def remove(self, file):
+        if not file:
             print('Must pass file to delete')
             return 1
-        self._ftp.delete(args.file)
+        self._ftp.delete(file)
 
-    def get(self, args: argparse.Namespace, p: printer.Printer):
-        localfn = os.path.basename(args.file)
-        if os.path.exists(localfn):
-            print('File %r already exists, not overwriting' % args.file)
+    def put(self, file):
+        remotefn = os.path.basename(file)
+        try:
+            with open(file, 'rb') as f:
+                self._ftp.storbinary('STOR %s' % remotefn, f)
+        except OSError as e:
+            print('Failed to read %s: %s' % (file, e))
             return 1
-        with open(localfn, 'wb') as f:
-            self._ftp.retrbinary('RETR %s' % args.file, f.write)
+        print('Sent')
+
+    def get(self, file):
+        localfn = os.path.basename(file)
+        if os.path.exists(localfn):
+            print('File %r already exists, not overwriting' % file)
+            return 1
+        try:
+            with open(localfn, 'wb') as f:
+                self._ftp.retrbinary('RETR %s' % file, f.write)
+        except OSError as e:
+            print('Failed to write %s: %s' % (localfn, e))
+            return 1
         print('Fetched %s' % localfn)
 
     def execute(self, args: argparse.Namespace, p: printer.Printer):
         self._ftp = p.connect_ftp()
+        if args.subcommand in ['remove', 'put', 'get'] and not args.file:
+            raise cli.UsageError('File is required for %s' % args.subcommand)
+
         if args.subcommand == 'list':
             return self.list(args, p)
         elif args.subcommand == 'remove':
-            return self.remove(args, p)
+            return self.remove(args.file)
+        elif args.subcommand == 'put':
+            return self.put(args.file)
         elif args.subcommand == 'get':
-            return self.get(args, p)
+            return self.get(args.file)
         else:
             raise RuntimeError('Unknown command %s' % args.subcommand)
