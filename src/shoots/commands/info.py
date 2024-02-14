@@ -6,6 +6,7 @@ from shoots import printer
 
 LOG = logging.getLogger(__name__)
 
+
 class Info(cli.ShootsCommand):
     def add_args(self, subparsers: argparse._SubParsersAction):
         subparsers.add_parser('info', help='Show info about printer')
