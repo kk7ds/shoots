@@ -8,6 +8,10 @@ from shoots import printer
 LOG = logging.getLogger(__name__)
 
 
+class UsageError(Exception):
+    pass
+
+
 # This is the base class you inherit from to add a new command
 class ShootsCommand:
     def __init__(self, name):
@@ -78,19 +82,25 @@ def main():
                 args.host))
 
     try:
-        p = printer.Printer(args.host, args.key, args.device,
-                            reconnect=args.reconnect)
+        pr = printer.Printer(args.host, args.key, args.device,
+                             reconnect=args.reconnect)
     except OSError as e:
         print('Failed to connect to %s: %s' % (args.host, e))
         return 1
 
-    while not p.device:
+    while not pr.device:
         LOG.info('Waiting for device identification')
-        p.wait()
+        pr.wait()
 
     LOG.debug('Running command %s' % args.command)
     try:
         command = commands[args.command]
-        return command.execute(args, p)
+        return command.execute(args, pr)
+    except UsageError as e:
+        print(str(e))
+        p.print_usage()
+        return 1
     except KeyboardInterrupt:
-        p.client.disconnect()
+        pass
+    finally:
+        pr.client.disconnect()
