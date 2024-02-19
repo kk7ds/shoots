@@ -65,6 +65,9 @@ class Files(cli.ShootsCommand):
                 self._ftp.retrbinary('RETR %s' % file, f.write)
         except OSError as e:
             print('Failed to write %s: %s' % (localfn, e))
+        except ftplib.error_perm as e:
+            print('Remote said: %s' % e)
+            os.remove(localfn)
             return 1
         print('Fetched %s' % localfn)
 
